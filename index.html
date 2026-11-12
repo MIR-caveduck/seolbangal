@@ -69,12 +69,19 @@ const entries=[{date:'2026-11-11',title:'메이드복과 함께한 달콤한 하
 // V0.8: avoid showing a fallback font before BarunHippi loads.
 // If the font server fails, reveal the page after a short timeout instead of blocking it.
 (function revealAfterFont(){
+  // Keep the illustration visible for at least three seconds,
+  // even when the webfont is already cached.
+  const started=performance.now();
+  const minimumDisplayMs=3000;
   let done=false;
   const reveal=()=>{
     if(done)return;
     done=true;
-    document.body.classList.remove('font-pending');
-    requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.add('loading-done')));
+    const remaining=Math.max(0,minimumDisplayMs-(performance.now()-started));
+    setTimeout(()=>{
+      document.body.classList.remove('font-pending');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.add('loading-done')));
+    },remaining);
   };
   const timeout=setTimeout(reveal,3500);
   if(!document.fonts || !document.fonts.load){clearTimeout(timeout);reveal();return;}
